@@ -53,6 +53,31 @@ public class HumanBeingScript : MonoBehaviour
 
 	public float Food;
 
+	public float GratitiudeFoodPerc = 10;
+	public float CharityFoodPerc = 10;
+	public float HateGratitutePerc = 10;
+    public float HateHatePerc = 15;
+
+
+	[Header("Charity")]
+	public float CModifier = 1;
+	public float CModifierHealth = 1;
+	public float CModifierSpeed = 0;
+	public float CModifierAttack = -0.5f;
+
+	[Header("Gratitude")]
+	public float GModifier = 1;
+    public float GModifierHealth = -0.5f;
+    public float GModifierSpeed = 1;
+    public float GModifierAttack = 0;
+
+	[Header("Hate")]
+	public float HModifier = 1;
+    public float HModifierHealth = 0;
+    public float HModifierSpeed = -0.5f;
+    public float HModifierAttack = 1;
+
+
 	public HumanType HType = HumanType.None;
 	public StateType CurrentState = StateType.Home;
 	public ActionState CurrentAction = ActionState.None;
@@ -169,7 +194,8 @@ public class HumanBeingScript : MonoBehaviour
 		if(gameObject.activeInHierarchy)
 		{
 			IsStarted = true;
-            Agent.destination = new Vector3(Random.Range(-40, 40), 0, Random.Range(-40, 40));
+			Agent.destination = new Vector3(Random.Range(-GameManagerScript.Instance.GroundSizeWidth, GameManagerScript.Instance.GroundSizeWidth), 0,
+			                                Random.Range(-GameManagerScript.Instance.GroundSizeHeight, GameManagerScript.Instance.GroundSizeHeight));
             TargetDest = Agent.destination;
 		}
 	}
@@ -322,8 +348,8 @@ public class HumanBeingScript : MonoBehaviour
 					switch (CurrentEnemyAction)
                     {
                         case ActionState.Begging:
-							human.Food +=  (Food / 100) * GivingPerc + (Food / 100) * 10;
-							Food -= (Food / 100) * GivingPerc - (Food / 100) * 10;
+							human.Food +=  (Food / 100) * GivingPerc + (Food / 100) * GratitiudeFoodPerc;
+							Food -= (Food / 100) * GivingPerc - (Food / 100) * CharityFoodPerc;
                             break;
                     }
 					Invoke("ResetAction", 5);
@@ -338,11 +364,11 @@ public class HumanBeingScript : MonoBehaviour
                             AttackEnemy(human.transform);
                             break;
                         case ActionState.Begging:
-							Attack += (Attack / 100) * 10;
+							Attack += (Attack / 100) * HateGratitutePerc;
                             AttackEnemy(human.transform);
                             break;
                         case ActionState.Fight:
-							Attack += (Attack / 100) * 15;
+							Attack += (Attack / 100) * HateHatePerc;
 							AttackEnemy(human.transform);
                             break;
                     }
@@ -394,24 +420,24 @@ public class HumanBeingScript : MonoBehaviour
             switch (CurrentAction)
             {
                 case ActionState.Charity:
-                    Charity += 1;
-                    BaseHp += 1;
-                    Speed += 0;
-                    Attack += -0.5f;
+					Charity += CModifier;
+					BaseHp += CModifierHealth;
+					Speed += CModifierSpeed;
+					Attack += CModifierAttack;
                     MR.material = CharityM;
                     break;
                 case ActionState.Begging:
-                    Gratitude += 1;
-                    BaseHp += -0.5f;
-                    Speed += 1;
-                    Attack += 0;
+					Gratitude += GModifier;
+					BaseHp += GModifierHealth;
+					Speed += GModifierSpeed;
+					Attack += GModifierAttack;
                     MR.material = BegM;
                     break;
                 case ActionState.Fight:
-                    Hate += 1;
-                    BaseHp += 0;
-                    Speed += -0.5f;
-                    Attack += 1f;
+					Hate += HModifier;
+					BaseHp += HModifierHealth;
+					Speed += HModifierSpeed;
+					Attack += HModifierAttack;
                     MR.material = AttackM;
                     break;
             }

@@ -128,9 +128,25 @@ MonoBehaviour:
   Gratitude: 50
   Hate: 50
   Hunger: 1
-  ReproductionPerc: 80
+  ReproductionPerc: 90.6
   GivingPerc: 20
   Food: 0
+  GratitiudeFoodPerc: 10
+  CharityFoodPerc: 10
+  HateGratitutePerc: 10
+  HateHatePerc: 15
+  CModifier: 1
+  CModifierHealth: 1
+  CModifierSpeed: 0
+  CModifierAttack: -0.5
+  GModifier: 1
+  GModifierHealth: -0.5
+  GModifierSpeed: 1
+  GModifierAttack: 0
+  HModifier: 1
+  HModifierHealth: 0
+  HModifierSpeed: -0.5
+  HModifierAttack: 1
   HType: 0
   CurrentState: 0
   CurrentAction: 0
