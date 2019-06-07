@@ -61,18 +61,24 @@ public class HumanBeingScript : MonoBehaviour
 
 	[Header("Charity")]
 	public float CModifier = 1;
+	public float CGModifier = 1;
+	public float CHModifier = 1;
 	public float CModifierHealth = 1;
 	public float CModifierSpeed = 0;
 	public float CModifierAttack = -0.5f;
 
 	[Header("Gratitude")]
 	public float GModifier = 1;
+	public float GCModifier = 1;
+	public float GHModifier = 1;
     public float GModifierHealth = -0.5f;
     public float GModifierSpeed = 1;
     public float GModifierAttack = 0;
 
 	[Header("Hate")]
 	public float HModifier = 1;
+	public float HCModifier = 1;
+	public float HGModifier = 1;
     public float HModifierHealth = 0;
     public float HModifierSpeed = -0.5f;
     public float HModifierAttack = 1;
@@ -421,6 +427,8 @@ public class HumanBeingScript : MonoBehaviour
             {
                 case ActionState.Charity:
 					Charity += CModifier;
+					Gratitude += CGModifier;
+					Hate += CHModifier;
 					BaseHp += CModifierHealth;
 					Speed += CModifierSpeed;
 					Attack += CModifierAttack;
@@ -428,6 +436,8 @@ public class HumanBeingScript : MonoBehaviour
                     break;
                 case ActionState.Begging:
 					Gratitude += GModifier;
+					Charity += GCModifier;
+					Hate += GHModifier;
 					BaseHp += GModifierHealth;
 					Speed += GModifierSpeed;
 					Attack += GModifierAttack;
@@ -435,6 +445,8 @@ public class HumanBeingScript : MonoBehaviour
                     break;
                 case ActionState.Fight:
 					Hate += HModifier;
+					Gratitude += HGModifier;
+                    Charity += HCModifier;
 					BaseHp += HModifierHealth;
 					Speed += HModifierSpeed;
 					Attack += HModifierAttack;
