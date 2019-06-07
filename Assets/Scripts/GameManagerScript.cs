@@ -10,6 +10,10 @@ public class GameManagerScript : MonoBehaviour {
 	public event StartDay DayStarted;
 
 
+	public Mesh HumanMesh;
+	public Mesh FoodMesh;
+	public Material FoodMaterial;
+
 	public static GameManagerScript Instance;
 
 	public GameStateType GameStatus = GameStateType.Intro;
@@ -100,6 +104,7 @@ public class GameManagerScript : MonoBehaviour {
 			HousesList.Add(house.GetComponent<HouseScript>());
 			GameObject human = Instantiate(Human, house.transform.position, Quaternion.identity, HumansContainer);
 			HumanBeingScript hbs = human.GetComponent<HumanBeingScript>();
+			human.GetComponent<MeshFilter>().sharedMesh = HumanMesh;
 			HumansList.Add(hbs);
 			hbs.TargetHouse = house.transform;
 			hbs.FinallyBackHome+= Hbs_FinallyBackHome;
@@ -109,6 +114,8 @@ public class GameManagerScript : MonoBehaviour {
 		for (int i = 0; i < FoodPerDay; i++)
         {
 			GameObject food = Instantiate(Food, FoodContainer);
+			food.GetComponent<MeshFilter>().sharedMesh = FoodMesh;
+			food.GetComponent<MeshRenderer>().sharedMaterial = FoodMaterial;
 			food.SetActive(false);
 			FoodsList.Add(food.GetComponent<FoodScript>());
 

@@ -1388,6 +1388,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a40ed3aed852640ce97beeb8c916a51a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  HumanMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  FoodMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  FoodMaterial: {fileID: 2100000, guid: e601015e84489446e930439e8157fd1b, type: 2}
   GameStatus: 0
   DayTime: 30
   Humans: 10
