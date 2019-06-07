@@ -23,6 +23,9 @@ public class GameManagerScript : MonoBehaviour {
 	[Range(1, 500)]
     public int FoodPerDay = 10;
 
+	[Range(0, 10)]
+	public int MaxNumChildren = 3;
+
 	[Header("GameElements")]
 	public GameObject House;
 
@@ -51,6 +54,18 @@ public class GameManagerScript : MonoBehaviour {
 
 	private IEnumerator DayTimeCoroutine;
 
+    [Range(0,100)]
+	public float GroundSizeWidth = 40;
+	[Range(0, 100)]
+    public float GroundSizeHeight = 40;
+
+	[HideInInspector]
+	private int ReproducedLastDay;
+	[HideInInspector]
+    private int DiedLastDay;
+
+
+
 	private void Awake()
 	{
 		Instance = this;
@@ -68,6 +83,13 @@ public class GameManagerScript : MonoBehaviour {
 		{
 			SceneManager.LoadScene(0);
 		}
+
+		UIManagerScript.Instance.InfoUpdate(HumansList.Where(r=>r.gameObject.activeInHierarchy && r.HType == HumanType.Charity).ToList().Count.ToString(),
+		                                    HumansList.Where(r =>r.gameObject.activeInHierarchy &&  r.HType == HumanType.Gratitude).ToList().Count.ToString(),
+		                                    HumansList.Where(r =>r.gameObject.activeInHierarchy &&  r.HType == HumanType.Hate).ToList().Count.ToString());
+
+		UIManagerScript.Instance.NumberOfEntity.text = HumansList.Where(r => r.gameObject.activeInHierarchy).ToList().Count.ToString();
+
 	}
 
     public void StartGame()
@@ -81,6 +103,7 @@ public class GameManagerScript : MonoBehaviour {
 			HumansList.Add(hbs);
 			hbs.TargetHouse = house.transform;
 			hbs.FinallyBackHome+= Hbs_FinallyBackHome;
+			hbs.OwnHouse = house.GetComponent<HouseScript>();
         }
 
 		for (int i = 0; i < FoodPerDay; i++)
@@ -106,23 +129,36 @@ public class GameManagerScript : MonoBehaviour {
 
 	public Vector3 GetFreeSpaceOnGround(float y)
 	{
-		Vector3 res = new Vector3(Random.Range(-40,40),y, Random.Range(-40, 40));
+		Vector3 res = new Vector3(Random.Range(-GroundSizeWidth,GroundSizeWidth),y, Random.Range(-GroundSizeWidth, GroundSizeWidth));
 
 		return res;
 	}
 
 	public void Reproduction(Transform home)
 	{
-		GameObject human = Instantiate(Human, home.position, Quaternion.identity, HumansContainer);
-        HumanBeingScript hbs = human.GetComponent<HumanBeingScript>();
-        HumansList.Add(hbs);
-		hbs.TargetHouse = home;
-        hbs.FinallyBackHome += Hbs_FinallyBackHome;
+		for (int i = 0; i < MaxNumChildren; i++)
+		{
+			GameObject human = Instantiate(Human, home.position, Quaternion.identity, HumansContainer);
+            HumanBeingScript hbs = human.GetComponent<HumanBeingScript>();
+            HumansList.Add(hbs);
+            hbs.TargetHouse = home;
+            hbs.FinallyBackHome += Hbs_FinallyBackHome;
+			hbs.OwnHouse = home.GetComponent<HouseScript>();
+			ReproducedLastDay++;
+		}
+	}
+
+    public void HumanBeingDied()
+	{
+		DiedLastDay++;
 	}
 
 
     public void DayStarting()
 	{
+		UIManagerScript.Instance.InfoDailyUpdate(ReproducedLastDay.ToString(), DiedLastDay.ToString());
+		ReproducedLastDay = 0;
+		DiedLastDay = 0;
 		HumansAtHome = 0;
 		if(DayTimeCoroutine != null)
 		{
@@ -137,6 +173,7 @@ public class GameManagerScript : MonoBehaviour {
 	{
 		SetFood();
 		DayStarted();
+		UIManagerScript.Instance.AddDay();
 		GameStatus = GameStateType.DayStarted;
 		int i = DayTime;
 		while(i > 0)

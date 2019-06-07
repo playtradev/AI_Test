@@ -9,6 +9,9 @@ public class HumanBeingScript : MonoBehaviour
 	public delegate void BackHome();
 	public event BackHome FinallyBackHome;
 
+	public delegate void Reproduced();
+	public event Reproduced ReproducedEvent;
+
 
 	[Range(0, 1000)]
 	public float HpMax;
@@ -50,7 +53,7 @@ public class HumanBeingScript : MonoBehaviour
 
 	public float Food;
 
-
+	public HumanType HType = HumanType.None;
 	public StateType CurrentState = StateType.Home;
 	public ActionState CurrentAction = ActionState.None;
 
@@ -63,6 +66,8 @@ public class HumanBeingScript : MonoBehaviour
 	public NavMeshAgent Agent;
 	[HideInInspector]
 	public Transform TargetHouse;
+	[HideInInspector]
+	public HouseScript OwnHouse;
 	[HideInInspector]
 	public Vector3 TargetDest;
 	[HideInInspector]
@@ -103,7 +108,7 @@ public class HumanBeingScript : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-		if (Vector3.Distance(transform.position, TargetHouse.position) < 1.2f && CurrentState == StateType.ComingBackHome)
+		if (Vector3.Distance(transform.position, TargetHouse.position) < 1f && CurrentState == StateType.ComingBackHome)
 		{
 			CurrentState = StateType.Home;
             HomeSweetHome();
@@ -134,8 +139,27 @@ public class HumanBeingScript : MonoBehaviour
 
 		if(Hp < 0)
 		{
-			gameObject.SetActive(false);
+			if(Food == 0)
+			{
+				GameManagerScript.Instance.HumanBeingDied();
+                gameObject.SetActive(false);
+			}
+			else
+			{
+				Hp += Food;
+				Food = 0;
+				if (Hp > BaseHp)
+                {
+					Food = Hp - BaseHp;
+                    Hp = BaseHp;
+                }
+			}
 		}
+
+
+		HType = Charity > Hate && Charity > Gratitude ? HumanType.Charity :
+				 Hate > Charity && Hate > Gratitude ? HumanType.Hate :
+				 Gratitude > Hate && Charity < Gratitude ? HumanType.Gratitude : HumanType.None;
 		//Debug.Log(Vector3.Distance(transform.position, TargetDest) + "   " + name);
 	}
 
@@ -158,7 +182,37 @@ public class HumanBeingScript : MonoBehaviour
 
     public void HomeSweetHome()
 	{
-		Hp = BaseHp;
+		if(Hp < BaseHp)
+		{
+			if(Food > 0)
+			{
+				Hp += Food;
+				if(Hp > BaseHp)
+				{
+					OwnHouse.FoodStore += Hp - BaseHp;
+					Hp = BaseHp;
+				}
+				else
+				{
+					Hp += OwnHouse.FoodStore;
+					if (Hp > BaseHp)
+                    {
+                        OwnHouse.FoodStore = Hp - BaseHp;
+                        Hp = BaseHp;
+                    }
+				}
+			}
+			else
+			{
+				Hp += OwnHouse.FoodStore;
+                if (Hp > BaseHp)
+                {
+                    OwnHouse.FoodStore = Hp - BaseHp;
+                    Hp = BaseHp;
+                }
+			}
+		}
+		Food = 0;
 		FinallyBackHome();
 		Reproduce();
 		CanIgetFood = true;
@@ -169,6 +223,7 @@ public class HumanBeingScript : MonoBehaviour
 	{
 		if(Random.Range(0,100) < ReproductionPerc)
 		{
+			
 			GameManagerScript.Instance.Reproduction(TargetHouse);
 		}
 	}
@@ -222,7 +277,7 @@ public class HumanBeingScript : MonoBehaviour
 		int i = 0;
 		while(true)
 		{
-			if(i == 13 && (CurrentState != StateType.Home && CurrentState != StateType.ComingBackHome))
+			if(i == 13 && (CurrentState != StateType.Home && CurrentAction != ActionState.Fight && CurrentState != StateType.ComingBackHome))
 			{
 				GoToPosition(TargetHouse.position);
                 CurrentState = StateType.ComingBackHome;
@@ -251,8 +306,9 @@ public class HumanBeingScript : MonoBehaviour
 
 	private void MeetOthers(Collider other)
 	{
-		if(CurrentAction == ActionState.None)
+		if(CurrentAction == ActionState.None && CurrentState != StateType.Home)
 		{
+			
 			HumanBeingScript human = other.GetComponent<HumanBeingScript>();
 
 			ActionState CurrentEnemyAction = human.GetCurrentAction(this);
@@ -269,21 +325,11 @@ public class HumanBeingScript : MonoBehaviour
 							human.Food +=  (Food / 100) * GivingPerc + (Food / 100) * 10;
 							Food -= (Food / 100) * GivingPerc - (Food / 100) * 10;
                             break;
-                        case ActionState.Fight:
-							AttackEnemy(human.transform);
-							break;
                     }
-					Invoke("ResetAction", 1);
+					Invoke("ResetAction", 5);
                     break;
 				case ActionState.Begging:
-					switch (CurrentEnemyAction)
-                    {
-                        case ActionState.Fight:
-							Attack += (Attack / 100) * 10;
-							AttackEnemy(human.transform);
-                            break;
-                    }
-					Invoke("ResetAction", 1);
+					Invoke("ResetAction", 5);
                     break;
 				case ActionState.Fight:
 					switch (CurrentEnemyAction)
@@ -316,57 +362,60 @@ public class HumanBeingScript : MonoBehaviour
 
 	public ActionState GetCurrentAction(HumanBeingScript enemy)
 	{
-		if (DidIFindFood)
-        {
-			if (enemy.DidIFindFood)
+		if(CurrentAction == ActionState.None && CurrentState != StateType.Home)
+		{
+			
+			if (DidIFindFood)
             {
-				float AttackPerc = (Hate * 100) / (Charity + Hate); 
-				CurrentAction =  Random.Range(0, 99) < AttackPerc ? ActionState.Fight : ActionState.Charity;
+                if (enemy.DidIFindFood)
+                {
+                    float AttackPerc = (Hate * 100) / (Charity + Hate);
+                    CurrentAction = Random.Range(0, 99) < AttackPerc ? ActionState.Fight : ActionState.Charity;
+                }
+                else
+                {
+                    float CharityPerc = (Hate * 100) / (Charity + Hate);
+                    CurrentAction = Random.Range(0, 99) < CharityPerc ? ActionState.Charity : ActionState.Fight;
+                }
             }
             else
             {
-				float CharityPerc = (Hate * 100) / (Charity + Hate); 
-				CurrentAction =  Random.Range(0, 99) < CharityPerc ? ActionState.Charity : ActionState.Fight;
+                if (enemy.DidIFindFood)
+                {
+                    float AttackPerc = (Hate * 100) / (Gratitude + Hate);
+                    CurrentAction = Random.Range(0, 99) < AttackPerc ? ActionState.Fight : ActionState.Begging;
+                }
+                else
+                {
+                    CurrentAction = ActionState.None;
+                }
             }
-        }
-        else
-        {
-			if (enemy.DidIFindFood)
-            {
-				float AttackPerc = (Hate * 100) / (Gratitude + Hate);
 
-				CurrentAction =  Random.Range(0, 99) < AttackPerc ? ActionState.Fight : ActionState.Begging;
-            }
-            else
+            switch (CurrentAction)
             {
-				CurrentAction =  ActionState.None;
+                case ActionState.Charity:
+                    Charity += 1;
+                    BaseHp += 1;
+                    Speed += 0;
+                    Attack += -0.5f;
+                    MR.material = CharityM;
+                    break;
+                case ActionState.Begging:
+                    Gratitude += 1;
+                    BaseHp += -0.5f;
+                    Speed += 1;
+                    Attack += 0;
+                    MR.material = BegM;
+                    break;
+                case ActionState.Fight:
+                    Hate += 1;
+                    BaseHp += 0;
+                    Speed += -0.5f;
+                    Attack += 1f;
+                    MR.material = AttackM;
+                    break;
             }
-        }
-
-		switch (CurrentAction)
-        {
-            case ActionState.Charity:
-				Charity += 1;
-				BaseHp += 1;
-				Speed += 0;
-				Attack += -0.5f;
-				MR.material = CharityM;
-                break;
-            case ActionState.Begging:
-				Gratitude += 1;
-				BaseHp += -0.5f;
-                Speed += 1;
-                Attack += 0;
-				MR.material = BegM;
-                break;
-            case ActionState.Fight:
-				Hate += 1;
-				BaseHp += 0;
-                Speed += -0.5f;
-                Attack += 1f;
-				MR.material = AttackM;
-                break;
-        }
+		}
 
 		return CurrentAction;
 
@@ -405,9 +454,8 @@ public class HumanBeingScript : MonoBehaviour
 			if(!Enemy.gameObject.activeInHierarchy || Enemy.CurrentState == StateType.Home)
 			{
 				EnemyAlive = false;
-				CurrentAction = ActionState.None;
 			}
-			yield return null;
+			yield return new WaitForEndOfFrame();
 		}
 
 		CurrentState = StateType.ComingBackHome;
@@ -438,4 +486,12 @@ public enum ActionState
     Fight,
     Charity,
     Begging
+}
+
+public enum HumanType
+{
+	None,
+	Charity,
+    Gratitude,
+    Hate
 }

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class HouseScript : MonoBehaviour {
 
+	public float FoodStore;
+
 	// Use this for initialization
 	void Start () {
 		
