@@ -123,14 +123,15 @@ MonoBehaviour:
   Attack: 0
   SpeedMax: 40
   SpeedMin: 30
-  Speed: 5
+  Speed: 0
   Charity: 50
   Gratitude: 50
   Hate: 50
   Hunger: 1
-  ReproductionPerc: 5
+  ReproductionPerc: 80
   GivingPerc: 20
   Food: 0
+  HType: 0
   CurrentState: 0
   CurrentAction: 0
   CharityM: {fileID: 2100000, guid: a5ad18c0cf56a457fac9166c00b66fc5, type: 2}
@@ -139,6 +140,7 @@ MonoBehaviour:
   BaseM: {fileID: 2100000, guid: 56dc771fd7b4f4eaa8ed07f62b7b53df, type: 2}
   Agent: {fileID: 0}
   TargetHouse: {fileID: 0}
+  OwnHouse: {fileID: 0}
   TargetDest: {x: 0, y: 0, z: 0}
   TargetFoodDest: {x: 0, y: 0, z: 0}
   IsStarted: 0
@@ -181,10 +183,10 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
+  m_Speed: 30
+  m_Acceleration: 20
   avoidancePriority: 50
-  m_AngularSpeed: 120
+  m_AngularSpeed: 200
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
