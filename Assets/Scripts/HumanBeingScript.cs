@@ -85,6 +85,7 @@ public class HumanBeingScript : MonoBehaviour
 
 
 	public HumanType HType = HumanType.None;
+	public HousesTypes HouseType = HousesTypes.Center;
 	public StateType CurrentState = StateType.Home;
 	public ActionState CurrentAction = ActionState.None;
 
@@ -287,7 +288,7 @@ public class HumanBeingScript : MonoBehaviour
 
 	private void OnTriggerStay(Collider other)
 	{
-		if (GameManagerScript.Instance.GameStatus == GameStateType.DayStarted)
+		/*if (GameManagerScript.Instance.GameStatus == GameStateType.DayStarted)
 		{
 			if (other.tag == "Food" && CurrentState != StateType.FoodFound && CanIgetFood)
 			{
@@ -301,7 +302,7 @@ public class HumanBeingScript : MonoBehaviour
             {
                 MeetOthers(other);
             }
-		}
+		}*/
 	}
 
 	private IEnumerator Live()
@@ -342,47 +343,47 @@ public class HumanBeingScript : MonoBehaviour
 		{
 			
 			HumanBeingScript human = other.GetComponent<HumanBeingScript>();
-
-			ActionState CurrentEnemyAction = human.GetCurrentAction(this);
-			GetCurrentAction(human);
-
-			switch (CurrentAction)
+			if(HouseType != human.HouseType)
 			{
-				case ActionState.None:
-					break;
-				case ActionState.Charity:
-					switch (CurrentEnemyAction)
-                    {
-                        case ActionState.Begging:
-							human.Food +=  (Food / 100) * GivingPerc + (Food / 100) * GratitiudeFoodPerc;
-							Food -= (Food / 100) * GivingPerc - (Food / 100) * CharityFoodPerc;
-                            break;
-                    }
-					Invoke("ResetAction", 5);
-                    break;
-				case ActionState.Begging:
-					Invoke("ResetAction", 5);
-                    break;
-				case ActionState.Fight:
-					switch (CurrentEnemyAction)
-                    {
-                        case ActionState.Charity:
-                            AttackEnemy(human.transform);
-                            break;
-                        case ActionState.Begging:
-							Attack += (Attack / 100) * HateGratitutePerc;
-                            AttackEnemy(human.transform);
-                            break;
-                        case ActionState.Fight:
-							Attack += (Attack / 100) * HateHatePerc;
-							AttackEnemy(human.transform);
-                            break;
-                    }
-                    break;
+				ActionState CurrentEnemyAction = human.GetCurrentAction(this);
+                GetCurrentAction(human);
+
+                switch (CurrentAction)
+                {
+                    case ActionState.None:
+                        break;
+                    case ActionState.Charity:
+                        switch (CurrentEnemyAction)
+                        {
+                            case ActionState.Begging:
+                                human.Food += (Food / 100) * GivingPerc + (Food / 100) * GratitiudeFoodPerc;
+                                Food -= (Food / 100) * GivingPerc - (Food / 100) * CharityFoodPerc;
+                                break;
+                        }
+                        Invoke("ResetAction", 5);
+                        break;
+                    case ActionState.Begging:
+                        Invoke("ResetAction", 5);
+                        break;
+                    case ActionState.Fight:
+                        switch (CurrentEnemyAction)
+                        {
+                            case ActionState.Charity:
+                                AttackEnemy(human.transform);
+                                break;
+                            case ActionState.Begging:
+                                Attack += (Attack / 100) * HateGratitutePerc;
+                                AttackEnemy(human.transform);
+                                break;
+                            case ActionState.Fight:
+                                Attack += (Attack / 100) * HateHatePerc;
+                                AttackEnemy(human.transform);
+                                break;
+                        }
+                        break;
+                }
 			}
 		}
-
-
 	}
 
     public void ResetAction()

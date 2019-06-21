@@ -5,7 +5,7 @@ using UnityEngine;
 public class HouseScript : MonoBehaviour {
 
 	public float FoodStore;
-
+	public HousesTypes HouseType;
 	// Use this for initialization
 	void Start () {
 		

@@ -31,8 +31,7 @@ public class GameManagerScript : MonoBehaviour {
 	public int MaxNumChildren = 3;
 
 	[Header("GameElements")]
-	public GameObject House;
-
+	public List<HouseScript> Houses = new List<HouseScript>();
 	public GameObject Human;
 
     public GameObject Food;
@@ -49,9 +48,6 @@ public class GameManagerScript : MonoBehaviour {
 	//Not visible in Inspector
 	[HideInInspector]
 	public List<HumanBeingScript> HumansList = new List<HumanBeingScript>();
-
-	[HideInInspector]
-	public List<HouseScript> HousesList = new List<HouseScript>();
 
 	[HideInInspector]
 	public List<FoodScript> FoodsList = new List<FoodScript>();
@@ -98,18 +94,22 @@ public class GameManagerScript : MonoBehaviour {
 
     public void StartGame()
 	{
-		for (int i = 0; i < Humans; i++)
-        {
-			GameObject house = Instantiate(House, GetFreeSpaceOnGround(1.5f), Quaternion.identity, HousesContainer);
-			HousesList.Add(house.GetComponent<HouseScript>());
-			GameObject human = Instantiate(Human, house.transform.position, Quaternion.identity, HumansContainer);
-			HumanBeingScript hbs = human.GetComponent<HumanBeingScript>();
-			human.GetComponent<MeshFilter>().sharedMesh = HumanMesh;
-			HumansList.Add(hbs);
-			hbs.TargetHouse = house.transform;
-			hbs.FinallyBackHome+= Hbs_FinallyBackHome;
-			hbs.OwnHouse = house.GetComponent<HouseScript>();
-        }
+
+		foreach (HouseScript house in Houses)
+		{
+			for (int i = 0; i < Humans; i++)
+            {
+                GameObject human = Instantiate(Human, house.transform.position, Quaternion.identity, HumansContainer);
+                HumanBeingScript hbs = human.GetComponent<HumanBeingScript>();
+                human.GetComponent<MeshFilter>().sharedMesh = HumanMesh;
+                HumansList.Add(hbs);
+				hbs.HouseType = house.HouseType;
+                hbs.TargetHouse = house.transform;
+                hbs.FinallyBackHome += Hbs_FinallyBackHome;
+                hbs.OwnHouse = house.GetComponent<HouseScript>();
+            }
+		}
+
 
 		for (int i = 0; i < FoodPerDay; i++)
         {
@@ -210,4 +210,14 @@ public enum GameStateType
 	Intro,
     DayStarted,
     EndOfDay
+}
+
+
+public enum HousesTypes
+{
+	North,
+    Center,
+    South,
+    East,
+    West
 }
